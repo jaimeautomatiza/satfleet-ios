@@ -1,0 +1,55 @@
+# Descripcion del proyecto de la app de iOS de SatFleet Live.
+# El Mac de GitHub lee este archivo y fabrica con el el proyecto de Xcode
+# (con la herramienta XcodeGen), asi no hace falta un Mac propio.
+
+name: SatFleetLive
+
+options:
+  bundleIdPrefix: com.satfleetlive
+  deploymentTarget:
+    iOS: "16.0"
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"         # version visible en la tienda
+    CURRENT_PROJECT_VERSION: "1"     # numero de compilacion (GitHub lo sube solo en cada envio)
+    SWIFT_VERSION: "5.0"
+
+targets:
+  SatFleetLive:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: SatFleetLive
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.satfleetlive.app
+        PRODUCT_NAME: SatFleetLive
+        TARGETED_DEVICE_FAMILY: "1,2"              # iPhone y iPad
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: SatFleet Live
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSRequiresIPhoneOS: true
+        ITSAppUsesNonExemptEncryption: false       # evita la pregunta de cifrado en TestFlight
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UILaunchScreen:
+          UIColorName: LaunchBackground            # fondo oscuro al arrancar (sin flash blanco)
+        UIStatusBarStyle: UIStatusBarStyleLightContent
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSCameraUsageDescription: "SatFleet Live uses the camera for AR Sky View, to show satellites over the real sky."
+        NSLocationWhenInUseUsageDescription: "SatFleet Live uses your location to show which satellites pass over you and to align AR Sky View."
+    scheme: {}
