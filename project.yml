@@ -15,6 +15,11 @@ settings:
     CURRENT_PROJECT_VERSION: "1"     # numero de compilacion (GitHub lo sube solo en cada envio)
     SWIFT_VERSION: "5.0"
 
+packages:
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: "9.0.0"
+
 targets:
   SatFleetLive:
     type: application
@@ -22,6 +27,14 @@ targets:
     deploymentTarget: "16.0"
     sources:
       - path: SatFleetLive
+    dependencies:
+      - package: GoogleSignIn
+        product: GoogleSignIn
+    entitlements:
+      path: SatFleetLive.entitlements
+      properties:
+        com.apple.developer.applesignin:      # "Iniciar sesion con Apple"
+          - Default
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.satfleetlive.app
@@ -41,6 +54,10 @@ targets:
         UILaunchScreen:
           UIColorName: LaunchBackground            # fondo oscuro al arrancar (sin flash blanco)
         UIStatusBarStyle: UIStatusBarStyleLightContent
+        CFBundleURLTypes:                          # necesario para "Continuar con Google"
+          - CFBundleURLName: google
+            CFBundleURLSchemes:
+              - com.googleusercontent.apps.369952976257-vbobropsjoiga5dvev6qs59v4de6a35h
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft

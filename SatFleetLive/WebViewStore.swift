@@ -53,6 +53,7 @@ final class WebViewStore: NSObject, ObservableObject {
 
     let webView: WKWebView
     private var locationBridge: LocationBridge?
+    private var authBridge: AuthBridge?
     private let networkMonitor = NWPathMonitor()
     private var hasNetwork = true
 
@@ -92,6 +93,11 @@ final class WebViewStore: NSObject, ObservableObject {
         ))
         controller.add(bridge, name: LocationBridge.handlerName)
         locationBridge = bridge
+
+        // Inicio de sesion nativo (Apple y Google)
+        let auth = AuthBridge(webView: webView) { [weak self] in self?.topViewController() }
+        controller.add(auth, name: AuthBridge.handlerName)
+        authBridge = auth
 
         #if DEBUG
         // Solo en pruebas: permite inspeccionar la web desde Safari del Mac
