@@ -6,7 +6,8 @@
 //  - los enlaces (los de otras webs y los de correo, WhatsApp... salen fuera),
 //  - los permisos de camara y brujula para el AR,
 //  - los avisos de la web (alert / confirm),
-//  - detectar cuando no hay conexion y recargar sola cuando vuelve.
+//  - detectar cuando no hay conexion y recargar sola cuando vuelve,
+//  - la ubicacion: la da la app (LocationBridge.swift), asi solo se pide permiso una vez.
 //
 
 import SwiftUI
@@ -51,6 +52,7 @@ final class WebViewStore: NSObject, ObservableObject {
     @Published var hasLoadedOnce = false
 
     let webView: WKWebView
+    private var locationBridge: LocationBridge?
     private let networkMonitor = NWPathMonitor()
     private var hasNetwork = true
 
@@ -79,6 +81,17 @@ final class WebViewStore: NSObject, ObservableObject {
         webView.backgroundColor = .satfleetBackground
         webView.scrollView.backgroundColor = .satfleetBackground
         webView.scrollView.bounces = false
+
+        // Ubicacion: la web se la pide a la app en vez de a Safari (un solo permiso)
+        let bridge = LocationBridge(webView: webView)
+        let controller = webView.configuration.userContentController
+        controller.addUserScript(WKUserScript(
+            source: LocationBridge.javascript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        ))
+        controller.add(bridge, name: LocationBridge.handlerName)
+        locationBridge = bridge
 
         #if DEBUG
         // Solo en pruebas: permite inspeccionar la web desde Safari del Mac
@@ -213,6 +226,11 @@ extension WebViewStore: WKNavigationDelegate {
 
         // 4. Todo lo demas se queda dentro de la app
         decisionHandler(.allow)
+    }
+
+    // Al cambiar de pagina, se cancelan los seguimientos de ubicacion de la anterior
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        locationBridge?.reset()
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
