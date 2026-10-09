@@ -36,17 +36,46 @@ struct ContentView: View {
 // MARK: - Pantalla de carga (mientras abre la web la primera vez)
 
 struct LoadingView: View {
+    // Mismos colores que la pantalla de carga de Android
+    private let lavender = Color(red: 167.0/255, green: 139.0/255, blue: 250.0/255)
+    private let gradient = LinearGradient(
+        colors: [
+            Color(red: 15.0/255, green: 15.0/255, blue: 30.0/255),
+            Color(red: 22.0/255, green: 33.0/255, blue: 62.0/255),
+            Color(red: 26.0/255, green: 10.0/255, blue: 46.0/255)
+        ],
+        startPoint: .bottomTrailing,
+        endPoint: .topLeading
+    )
+
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
+            Spacer()
+            Image("Logo")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 140, height: 140)
+                .accessibilityHidden(true)
             Text("SatFleet Live")
                 .font(.system(size: 28, weight: .bold))
+                .kerning(1.4)
                 .foregroundStyle(Color.white)
+                .padding(.top, 24)
+            Text("Satellites, Rockets, Moon, Mars & Deep Space")
+                .font(.system(size: 14))
+                .foregroundStyle(lavender)
+                .multilineTextAlignment(.center)
+                .padding(.top, 8)
+                .padding(.horizontal, 24)
             ProgressView()
-                .tint(Color.satfleetPurple)
-                .scaleEffect(1.3)
+                .tint(lavender)
+                .scaleEffect(1.2)
+                .padding(.top, 32)
+            Spacer()
+            Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.satfleetBackground.ignoresSafeArea())
+        .background(gradient.ignoresSafeArea())
     }
 }
 
