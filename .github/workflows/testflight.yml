@@ -55,13 +55,6 @@ jobs:
             exit 1
           fi
 
-      - name: Fabricar el proyecto de Xcode
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: "1"
-        run: |
-          brew install xcodegen
-          xcodegen generate
-
       - name: Instalar el certificado de firma
         env:
           P12_BASE64: ${{ secrets.DIST_CERT_P12_BASE64 }}
@@ -97,6 +90,14 @@ jobs:
           NAME=$(/usr/libexec/PlistBuddy -c "Print Name" "$RUNNER_TEMP/profile.plist")
           APPID=$(/usr/libexec/PlistBuddy -c "Print Entitlements:application-identifier" "$RUNNER_TEMP/profile.plist")
           echo "Perfil: $NAME ($UUID) para $APPID"
+          echo "Permisos incluidos en el perfil:"
+          /usr/libexec/PlistBuddy -c "Print Entitlements" "$RUNNER_TEMP/profile.plist"
+          if grep -q "applesignin" "$RUNNER_TEMP/profile.plist"; then
+            echo "Incluye Iniciar sesion con Apple: SI"
+          else
+            echo "::error::El perfil NO incluye Iniciar sesion con Apple. Rehazlo en developer.apple.com (Profiles > Edit > Save > Download) y actualiza el secreto PROVISIONING_PROFILE_BASE64."
+            exit 1
+          fi
           case "$APPID" in
             *".$BUNDLE_ID") ;;
             *) echo "::error::El perfil es para $APPID y no para $BUNDLE_ID."; exit 1 ;;
@@ -106,6 +107,13 @@ jobs:
             cp "$RUNNER_TEMP/app.mobileprovision" "$dir/$UUID.mobileprovision"
           done
           echo "PROFILE_UUID=$UUID" >> "$GITHUB_ENV"
+
+      - name: Fabricar el proyecto de Xcode
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: |
+          brew install xcodegen
+          xcodegen generate   # usa APPLE_TEAM_ID y PROFILE_UUID para firmar solo la app
 
       - name: Preparar la clave de App Store Connect
         env:
@@ -123,12 +131,7 @@ jobs:
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/SatFleetLive.xcarchive" \
-            CODE_SIGN_STYLE=Manual \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
             CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
-            OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN" \
             2>&1 | tee "$RUNNER_TEMP/build.log"
 
       - name: Firmar y subir a TestFlight
