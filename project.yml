@@ -22,6 +22,9 @@ packages:
   RevenueCat:
     url: https://github.com/RevenueCat/purchases-ios-spm
     from: "5.0.0"
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: "12.0.0"
 
 targets:
   SatFleetLive:
@@ -35,11 +38,14 @@ targets:
         product: GoogleSignIn
       - package: RevenueCat
         product: RevenueCat
+      - package: Firebase
+        product: FirebaseMessaging
     entitlements:
       path: SatFleetLive.entitlements
       properties:
         com.apple.developer.applesignin:      # "Iniciar sesion con Apple"
           - Default
+        aps-environment: production                # notificaciones (Push)
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.satfleetlive.app

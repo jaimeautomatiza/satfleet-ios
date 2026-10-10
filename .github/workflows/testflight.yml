@@ -98,6 +98,12 @@ jobs:
             echo "::error::El perfil NO incluye Iniciar sesion con Apple. Rehazlo en developer.apple.com (Profiles > Edit > Save > Download) y actualiza el secreto PROVISIONING_PROFILE_BASE64."
             exit 1
           fi
+          if grep -q "aps-environment" "$RUNNER_TEMP/profile.plist"; then
+            echo "Incluye notificaciones (Push): SI"
+          else
+            echo "::error::El perfil NO incluye notificaciones (Push Notifications). Rehazlo en developer.apple.com (Profiles > Edit > Save > Download) y actualiza el secreto PROVISIONING_PROFILE_BASE64."
+            exit 1
+          fi
           case "$APPID" in
             *".$BUNDLE_ID") ;;
             *) echo "::error::El perfil es para $APPID y no para $BUNDLE_ID."; exit 1 ;;

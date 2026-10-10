@@ -105,6 +105,14 @@ final class WebViewStore: NSObject, ObservableObject {
         controller.add(purchases, name: PurchaseBridge.handlerName)
         purchaseBridge = purchases
 
+        // Notificaciones nativas (lanzamientos y avisos de pases)
+        controller.addUserScript(WKUserScript(
+            source: PushManager.javascript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        ))
+        controller.add(PushManager.shared, name: PushManager.handlerName)
+
         #if DEBUG
         // Solo en pruebas: permite inspeccionar la web desde Safari del Mac
         if #available(iOS 16.4, *) {
@@ -114,6 +122,7 @@ final class WebViewStore: NSObject, ObservableObject {
 
         startNetworkMonitor()
         webView.load(URLRequest(url: satfleetHomeURL))
+        PushManager.shared.attach(webView: webView)
     }
 
     // MARK: Acciones de los botones
@@ -248,6 +257,7 @@ extension WebViewStore: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         hasLoadedOnce = true
         isOffline = false
+        PushManager.shared.pageDidFinish()
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
