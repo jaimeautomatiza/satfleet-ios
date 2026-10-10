@@ -45,6 +45,8 @@ targets:
     sources:
       - path: SatFleetLive
       - path: Shared                               # datos de la Live Activity (los comparte con el widget)
+      - path: Privacy/App/PrivacyInfo.xcprivacy    # manifiesto de privacidad de la app
+        buildPhase: resources
     dependencies:
       - package: GoogleSignIn
         product: GoogleSignIn
@@ -118,6 +120,8 @@ targets:
     sources:
       - path: SatFleetLiveWidget
       - path: Shared
+      - path: Privacy/Widget/PrivacyInfo.xcprivacy # manifiesto de privacidad del widget
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.satfleetlive.app.widget
