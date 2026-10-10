@@ -1,6 +1,13 @@
 # Descripcion del proyecto de la app de iOS de SatFleet Live.
 # El Mac de GitHub lee este archivo y fabrica con el el proyecto de Xcode
 # (con la herramienta XcodeGen), asi no hace falta un Mac propio.
+#
+# Hay dos "piezas" (targets):
+#   - SatFleetLive:        la app (web + funciones nativas)
+#   - SatFleetLiveWidget:  la extension con el widget de la ISS y la Live Activity
+#                          de los lanzamientos. Va metida DENTRO de la app.
+# Cada una se firma con su propio perfil (la app con PROFILE_UUID y el widget
+# con WIDGET_PROFILE_UUID; los dos los saca el workflow de los secretos).
 
 name: SatFleetLive
 
@@ -11,7 +18,7 @@ options:
 
 settings:
   base:
-    MARKETING_VERSION: "1.0"         # version visible en la tienda
+    MARKETING_VERSION: "1.0"         # version visible en la tienda (la app y el widget llevan la misma)
     CURRENT_PROJECT_VERSION: "1"     # numero de compilacion (GitHub lo sube solo en cada envio)
     SWIFT_VERSION: "5.0"
 
@@ -27,12 +34,17 @@ packages:
     from: "12.0.0"
 
 targets:
+
+  # ─────────────────────────────────────────────────────────────
+  # LA APP
+  # ─────────────────────────────────────────────────────────────
   SatFleetLive:
     type: application
     platform: iOS
     deploymentTarget: "16.0"
     sources:
       - path: SatFleetLive
+      - path: Shared                               # datos de la Live Activity (los comparte con el widget)
     dependencies:
       - package: GoogleSignIn
         product: GoogleSignIn
@@ -40,6 +52,9 @@ targets:
         product: RevenueCat
       - package: Firebase
         product: FirebaseMessaging
+      - target: SatFleetLiveWidget                 # mete el widget dentro de la app
+        embed: true
+        codeSign: false                          # el widget ya viene firmado con su propio perfil
     entitlements:
       path: SatFleetLive.entitlements
       properties:
@@ -66,15 +81,19 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSRequiresIPhoneOS: true
         ITSAppUsesNonExemptEncryption: false       # evita la pregunta de cifrado en TestFlight
+        NSSupportsLiveActivities: true             # permite la cuenta atras en la pantalla de bloqueo
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         UILaunchScreen:
           UIColorName: LaunchBackground            # fondo oscuro al arrancar (sin flash blanco)
         UIStatusBarStyle: UIStatusBarStyleLightContent
-        CFBundleURLTypes:                          # necesario para "Continuar con Google"
-          - CFBundleURLName: google
+        CFBundleURLTypes:
+          - CFBundleURLName: google                # necesario para "Continuar con Google"
             CFBundleURLSchemes:
               - com.googleusercontent.apps.369952976257-vbobropsjoiga5dvev6qs59v4de6a35h
+          - CFBundleURLName: satfleetlive          # al tocar la Live Activity se abre Launches
+            CFBundleURLSchemes:
+              - satfleetlive
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft
@@ -87,3 +106,38 @@ targets:
         NSCameraUsageDescription: "SatFleet Live uses the camera for AR Sky View, to show satellites over the real sky."
         NSLocationWhenInUseUsageDescription: "SatFleet Live uses your location to show which satellites pass over you and to align AR Sky View."
     scheme: {}
+
+  # ─────────────────────────────────────────────────────────────
+  # EL WIDGET (widget de la ISS + Live Activity de lanzamientos)
+  # No usa ninguna libreria externa ni ningun permiso especial.
+  # ─────────────────────────────────────────────────────────────
+  SatFleetLiveWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: SatFleetLiveWidget
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.satfleetlive.app.widget
+        PRODUCT_NAME: SatFleetLiveWidget
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SKIP_INSTALL: YES                          # va dentro de la app, no suelto
+        APPLICATION_EXTENSION_API_ONLY: YES
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
+      configs:
+        Release:                                   # firma del widget con SU perfil
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          DEVELOPMENT_TEAM: ${APPLE_TEAM_ID}
+          PROVISIONING_PROFILE_SPECIFIER: ${WIDGET_PROFILE_UUID}
+    info:
+      path: SatFleetLiveWidget-Info.plist
+      properties:
+        CFBundleDisplayName: SatFleet Live
+        CFBundlePackageType: $(PRODUCT_BUNDLE_PACKAGE_TYPE)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension

@@ -113,6 +113,14 @@ final class WebViewStore: NSObject, ObservableObject {
         ))
         controller.add(PushManager.shared, name: PushManager.handlerName)
 
+        // Cuenta atras de lanzamientos en la pantalla de bloqueo (solo iPhone)
+        controller.addUserScript(WKUserScript(
+            source: LiveActivityManager.javascript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        ))
+        controller.add(LiveActivityManager.shared, name: LiveActivityManager.handlerName)
+
         #if DEBUG
         // Solo en pruebas: permite inspeccionar la web desde Safari del Mac
         if #available(iOS 16.4, *) {
@@ -123,6 +131,7 @@ final class WebViewStore: NSObject, ObservableObject {
         startNetworkMonitor()
         webView.load(URLRequest(url: satfleetHomeURL))
         PushManager.shared.attach(webView: webView)
+        LiveActivityManager.shared.attach(webView: webView)
     }
 
     // MARK: Acciones de los botones
@@ -258,6 +267,7 @@ extension WebViewStore: WKNavigationDelegate {
         hasLoadedOnce = true
         isOffline = false
         PushManager.shared.pageDidFinish()
+        LiveActivityManager.shared.pageDidFinish()
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {

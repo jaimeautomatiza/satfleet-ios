@@ -61,6 +61,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
                                 didReceive response: UNNotificationResponse) async {
         let urlString = response.notification.request.content.userInfo["url"] as? String
         PushManager.shared.openFromNotification(urlString)
+        // Aviso "Despegue en 2 horas": empieza la cuenta atras en la pantalla de bloqueo
+        if let launchId = response.notification.request.content.userInfo["satfleetFollowLaunch"] as? String {
+            LiveActivityManager.shared.startFromReminder(launchId)
+        }
     }
 }
 

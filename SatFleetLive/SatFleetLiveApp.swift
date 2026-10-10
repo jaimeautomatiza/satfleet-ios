@@ -16,7 +16,13 @@ struct SatFleetLiveApp: App {
         WindowGroup {
             ContentView()
                 .preferredColorScheme(.dark)
-                .onOpenURL { url in _ = GIDSignIn.sharedInstance.handle(url) }
+                .onOpenURL { url in
+                    if url.scheme == "satfleetlive" {
+                        LiveActivityManager.shared.handleDeepLink(url)   // toque en la Live Activity
+                    } else {
+                        _ = GIDSignIn.sharedInstance.handle(url)
+                    }
+                }
         }
     }
 }
