@@ -19,6 +19,9 @@ packages:
   GoogleSignIn:
     url: https://github.com/google/GoogleSignIn-iOS
     from: "9.0.0"
+  RevenueCat:
+    url: https://github.com/RevenueCat/purchases-ios-spm
+    from: "5.0.0"
 
 targets:
   SatFleetLive:
@@ -30,6 +33,8 @@ targets:
     dependencies:
       - package: GoogleSignIn
         product: GoogleSignIn
+      - package: RevenueCat
+        product: RevenueCat
     entitlements:
       path: SatFleetLive.entitlements
       properties:

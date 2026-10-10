@@ -54,6 +54,7 @@ final class WebViewStore: NSObject, ObservableObject {
     let webView: WKWebView
     private var locationBridge: LocationBridge?
     private var authBridge: AuthBridge?
+    private var purchaseBridge: PurchaseBridge?
     private let networkMonitor = NWPathMonitor()
     private var hasNetwork = true
 
@@ -98,6 +99,11 @@ final class WebViewStore: NSObject, ObservableObject {
         let auth = AuthBridge(webView: webView) { [weak self] in self?.topViewController() }
         controller.add(auth, name: AuthBridge.handlerName)
         authBridge = auth
+
+        // Compras con Apple (RevenueCat)
+        let purchases = PurchaseBridge(webView: webView) { [weak self] in self?.topViewController() }
+        controller.add(purchases, name: PurchaseBridge.handlerName)
+        purchaseBridge = purchases
 
         #if DEBUG
         // Solo en pruebas: permite inspeccionar la web desde Safari del Mac
