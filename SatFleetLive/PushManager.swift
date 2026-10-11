@@ -32,6 +32,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         UNUserNotificationCenter.current().delegate = self
         application.registerForRemoteNotifications()
         PushManager.shared.start()
+        ReviewManager.shared.start()
         return true
     }
 

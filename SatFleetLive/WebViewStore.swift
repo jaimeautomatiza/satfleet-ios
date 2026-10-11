@@ -268,6 +268,7 @@ extension WebViewStore: WKNavigationDelegate {
         isOffline = false
         PushManager.shared.pageDidFinish()
         LiveActivityManager.shared.pageDidFinish()
+        ReviewManager.shared.pageDidFinish()
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
