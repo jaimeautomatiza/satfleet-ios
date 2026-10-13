@@ -67,7 +67,7 @@ final class WebViewStore: NSObject, ObservableObject {
         config.applicationNameForUserAgent = "Mobile/15E148 SatFleetLiveiOS/1.0"
 
         let marker = WKUserScript(
-            source: "window.SatFleetIOS = { version: '1.0' };",
+            source: "window.SatFleetIOS = { version: '1.0', appleRevoke: true };",
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         )
