@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   testflight:
-    runs-on: macos-latest
+    runs-on: xcode-27            # Mac de GitHub con Xcode 27 (necesario para el iPhone Duo)
     timeout-minutes: 60
     defaults:
       run:
@@ -55,12 +55,24 @@ jobs:
           check WIDGET_PROVISIONING_PROFILE_BASE64 "$WIDGET_PROFILE"
           exit $missing
 
+      - name: Elegir Xcode 27.1 (soporte del iPhone Duo)
+        run: |
+          # Con el SDK de iOS 27.1 la app ocupa toda la pantalla del iPhone Duo
+          # (con uno anterior sale centrada con bordes negros).
+          if [ -d /Applications/Xcode_27.1.app ]; then
+            sudo xcode-select -s /Applications/Xcode_27.1.app
+          else
+            echo "::error::Este Mac de GitHub no tiene Xcode 27.1. Estos son los que tiene:"
+            ls -d /Applications/Xcode*.app
+            exit 1
+          fi
+
       - name: Comprobar la version de Xcode
         run: |
           xcodebuild -version
-          MAJOR=$(xcodebuild -version | head -1 | awk '{print $2}' | cut -d. -f1)
-          if [ "$MAJOR" -lt 26 ]; then
-            echo "::error::Este Mac de GitHub tiene Xcode $MAJOR y Apple exige Xcode 26 o posterior."
+          xcodebuild -showsdks | grep -i iphoneos
+          if ! xcodebuild -showsdks | grep -qE "iphoneos(27\.[1-9]|2[8-9]|[3-9][0-9])"; then
+            echo "::error::No hay SDK de iOS 27.1 o posterior: la app no quedaria preparada para el iPhone Duo."
             exit 1
           fi
 
